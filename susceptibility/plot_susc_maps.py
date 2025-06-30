@@ -12,13 +12,13 @@ from home import DATAPATH
 
 def plot_susc(vs, fires, total_ba, outfolder, tr1, tr2, year, month):
 
-    path = f'{DATAPATH}/susceptibility/{vs}/susc_calabria_{year}_{month}.tif'
+    path = f'{DATAPATH}/susceptibility/{vs}/susc_{year}_{month}.tif'
     outputlike = f'{outfolder}/susc_plot_{year}{month}.png'
     if not os.path.exists(outputlike):
         settings = dict(
             fires_file= fires,
             fires_col= 'date_iso', # 'finaldate',
-            crs= 'epsg:3857',
+            crs= 'epsg:32632',
             susc_path= path,
             xboxmin_hist= 0.2,
             yboxmin_hist= 0.1,
@@ -32,12 +32,12 @@ def plot_susc(vs, fires, total_ba, outfolder, tr1, tr2, year, month):
             season= False,
             total_ba_period= total_ba,
             susc_nodata= -1,
-            pixel_to_ha_factor= 0.04,
+            pixel_to_ha_factor= 1,
             allow_hist= True,
             allow_pie= True,
             allow_fires= True,
-            normalize_over_y_axis= 60,
-            limit_barperc_to_show= 2,
+            normalize_over_y_axis= 10,
+            limit_barperc_to_show= 1,
         )
 
         fft.plot_susc_with_bars(**settings)
@@ -47,15 +47,15 @@ def plot_susc(vs, fires, total_ba, outfolder, tr1, tr2, year, month):
 if __name__ == '__main__':
 
     fft = ff.FireTools()
-    vs = 'v2'
-    fires_file = f'{DATAPATH}/raw/burned_area/incendi_dpc_2007_2023_calabria_3857.shp'
+    vs = 'v1'
+    fires_file = f'{DATAPATH}/raw/burned_area/incendi_dpc_2007_2023_sardegna_32632.shp'
     # fires_file = f'{DATAPATH}/raw/burned_area/2024_effis/calabria_effis_2024.shp'
     total_ba = gpd.read_file(fires_file).area.sum() / 10000
     tr_path = f'{DATAPATH}/susceptibility/{vs}/thresholds/thresholds.json'
     thresholds = json.load(open(tr_path))
     tr1, tr2 = thresholds['lv1'], thresholds['lv2']
 
-    with multiprocessing.Pool(processes=12) as pool:
+    with multiprocessing.Pool(processes=20) as pool:
         pool.starmap(
             plot_susc,
             [

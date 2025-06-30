@@ -14,9 +14,9 @@ from home import DATAPATH
 
 #%%
 raster = gt.Raster()
-dem_file = f'{DATAPATH}/raw/dem/dem_calabria_20m_3857.tif'
-tiles_file = f'{DATAPATH}/aoi/grid_clean.geojsonl.json'
-working_crs = 'EPSG:3857' #pseudo mercator (metric) - same as input dem (dem.crs)
+dem_file = f'{DATAPATH}/raw/dem/dem_ispra_100m_32632_v2.tif'
+tiles_file = f'{DATAPATH}/aoi/grid_wgs_clean.geojsonl.json'
+working_crs = 'EPSG:32632' #pseudo mercator (metric) - same as input dem (dem.crs)
 out_folder = f'{DATAPATH}/ML'
 
 # clip dem per tile 
@@ -27,7 +27,7 @@ with rio.open(dem_file) as dem:
     tiles.to_file(tiles_file, driver='GeoJSON')
     for i, tile in tiles.iterrows():
         print(f'Processing tile {tile["id_sorted"]}')
-        # buffer tile of 5 km in degree
+        # buffer tile of 5 km in meters
         tile['geometry'] = tile['geometry'].buffer(5000)
         # clip usin rasterio
         tile_geom = tile['geometry']

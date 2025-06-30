@@ -10,10 +10,10 @@ import json
 
 from home import DATAPATH
 
-susc_file = f'{DATAPATH}/susceptibility/static_v2/susceptibility/SUSCEPTIBILITY.tif'
-fires_file = f'{DATAPATH}/raw/burned_area/incendi_dpc_2007_2023_calabria_3857.shp'
+susc_file = f'{DATAPATH}/susceptibility/static/susceptibility/SUSCEPTIBILITY.tif'
+fires_file = f'{DATAPATH}/raw/burned_area/incendi_dpc_2007_2023_sardegna_32632.shp'
 fires_col = 'date_iso'
-crs = 'EPSG:3857'
+crs = 'EPSG:32632'
 
 fires = gpd.read_file(fires_file)
 fires['date_iso'] = pd.to_datetime(fires['date_iso'])
@@ -29,7 +29,7 @@ with rio.open(susc_file) as susc:
     q2 = np.quantile(susc_values, 0.10)
 
 
-folder = f'{DATAPATH}/susceptibility/static_v2/thresholds'
+folder = f'{DATAPATH}/susceptibility/static/thresholds'
 os.makedirs(folder, exist_ok=True)
 # save in json
 thresholds = dict(lv1=float(q1), lv2=float(q2))

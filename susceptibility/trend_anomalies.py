@@ -13,14 +13,16 @@ from home import DATAPATH
 import json
 Ras = gt.Raster()
 
-static_map_file = f'{DATAPATH}/susceptibility/static_v2/susc_classified/susc_3classes.tif'
-monthly_folder = f'{DATAPATH}/susceptibility/v2'
-outfolder = f'{DATAPATH}/susceptibility/v2/PNG/trend_anomalies'
-tr = f'{DATAPATH}/susceptibility/v2/thresholds/thresholds.json'
+static_map_file = f'{DATAPATH}/susceptibility/static/susceptibility/SUSCEPTIBILITY.tif'
+monthly_folder = f'{DATAPATH}/susceptibility/v1'
+outfolder = f'{DATAPATH}/susceptibility/v1/PNG/trend_anomalies'
+tr = f'{DATAPATH}/susceptibility/v1/thresholds/thresholds.json'
+trt_static = f'{DATAPATH}/susceptibility/static/thresholds/thresholds.json'
 os.makedirs(outfolder, exist_ok=True)
 high_tr = json.load(open(tr))['lv2']
+high_tr_static = json.load(open(trt_static))['lv2']
 static_arr = Ras.read_1band(static_map_file)
-static_arr_cl3 = np.where(static_arr == 3, 1, 0)
+static_arr_cl3 = np.where(static_arr >= high_tr_static, 1, 0)
 static_cl3_extent = static_arr_cl3.sum()
 
 years = list(range(2011, 2024))
@@ -30,7 +32,7 @@ yearmonths = [f'{year}_{month}' for year in years for month in months]
 anomalis = []
 for month in yearmonths:
     print(month)
-    filepath = os.path.join(monthly_folder, f'susc_calabria_{month}.tif')
+    filepath = os.path.join(monthly_folder, f'susc_{month}.tif')
     # compute array of anomalies
     with rio.open(filepath) as month_ras:
         arr_cl3 = month_ras.read(1)
@@ -42,7 +44,7 @@ for month in yearmonths:
 
 
 # trend burned area 
-fires_file = f'{DATAPATH}/raw/burned_area/incendi_dpc_2007_2023_calabria_3857.shp'
+fires_file = f'{DATAPATH}/raw/burned_area/incendi_dpc_2007_2023_sardegna_32632.shp'
 fires = gpd.read_file(fires_file)
 fires['date_iso'] = pd.to_datetime(fires['date_iso'])
 fires = fires.to_crs('EPSG:32632')

@@ -19,12 +19,12 @@ CORES = 60
 #%% inputs
 
 
-variables = ['SPI', 'SPEI', 'P', 'Tanomaly', 'T'] # last one is mean T
+variables = ['SPI', 'SPEI'] # , 'P', 'Tanomaly', 'T'] # only spi and spei are used
 months_aggregation = [1, 3, 6]
 years = list(range(2011, 2025)) #
 months = list(range(1, 13)) # 
 tiles = os.listdir(TILES_DIR) # tiles to clip the data on  # 
-tiles = ['tile_7'] #, 'tile_14','tile_3', 'tile_4', 'tile_2', 'tile_1'] # os.listdir(TILES_DIR) # tiles to clip the data on  # 
+# tiles = ['tile_7'] #, 'tile_14','tile_3', 'tile_4', 'tile_2', 'tile_1'] # os.listdir(TILES_DIR) # tiles to clip the data on  # 
 
 Raster = gt.Raster()
 
@@ -66,7 +66,7 @@ def clip_to_tiles(var, aggr, year, month, tile: str, tile_df: gpd.GeoDataFrame):
     out_folder = os.path.join(TILES_DIR, tile, 'climate', f'{year}_{month}')
     os.makedirs(out_folder, exist_ok=True)
     wgs_file = os.path.join(out_folder, f'{var}_{aggr}m_orig.tif')
-    reproj_out_file = os.path.join(out_folder, f'{var}_{aggr}m_bilinear_epsg3857.tif') # out filename
+    reproj_out_file = os.path.join(out_folder, f'{var}_{aggr}m_bilinear_epsg32632.tif') # out filename
 
     if not os.path.exists(reproj_out_file):
     # if reproj_out_file == f'{DATAPATH}/ML/tile_2/climate/2012_6/spi_1m_bilinear_epsg3857.tif':
@@ -89,11 +89,17 @@ def clip_to_tiles(var, aggr, year, month, tile: str, tile_df: gpd.GeoDataFrame):
         
         # reference_file_wgs = os.path.join(TILES_DIR, tile, 'dem', 'dem_wgs.tif')
         reference_file = os.path.join(TILES_DIR, tile, 'dem', 'dem_20m_3857.tif')
+        rename = os.path.join(TILES_DIR, tile, 'dem', 'dem_100m_32632.tif')
+        if not os.path.exists(reference_file):
+            reference_file = rename
+        else:
+            os.rename(reference_file, rename)
+            reference_file = rename  # Use the renamed file for reprojection
         with rio.open(reference_file) as ref:
             bounds = ref.bounds  # Extract bounds (left, bottom, right, top)
             xres = ref.transform[0]  # Pixel width
             yres = ref.transform[4]  # Pixel height
-            working_crs = 'EPSG:3857'  # Target CRS
+            working_crs = 'EPSG:32632'  # Target CRS
 
         # Use gdalwarp to reproject and match the bounds and resolution of the reference file
         interpolation = 'bilinear'  # Interpolation method
@@ -112,7 +118,7 @@ def clip_to_tiles(var, aggr, year, month, tile: str, tile_df: gpd.GeoDataFrame):
 
 with mp.Pool(CORES) as p:
     # open the tiles already in WGS 84
-    tile_df = gpd.read_file(f'{DATAPATH}/aoi/grid_clean.geojsonl.json', driver='GeoJSONSeq')
+    tile_df = gpd.read_file(f'{DATAPATH}/aoi/grid_wgs_clean.geojsonl.json', driver='GeoJSONSeq')
     tile_df = tile_df.to_crs('EPSG:4326') #proj of the input drought
     # use all the cores to clip the data
     p.starmap(clip_to_tiles, [(var, aggr, year, month, tile, tile_df) for var in variables
@@ -132,11 +138,9 @@ with mp.Pool(CORES) as p:
 
 folder = 'climate_1m_shift'
 
-
-
 def check(tile, var, aggr, year, month):
     # folderpath changes depending on the variables
-    file = os.path.join(TILES_DIR, tile, folder, f'{year}_{month}', f'{var}_{aggr}m_bilinear_epsg3857.tif')
+    file = os.path.join(TILES_DIR, tile, folder, f'{year}_{month}', f'{var}_{aggr}m_bilinear_epsg32632.tif')
     if os.path.exists(file):
         try:
             with rio.open(file) as src:

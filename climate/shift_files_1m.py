@@ -7,7 +7,7 @@ import pandas as pd
 from home import TILES_DIR
 
 tiles = os.listdir(TILES_DIR)
-tiles = ['tile_11','tile_22'] # os.listdir(TILES_DIR) # tiles to clip the data on  # 
+# tiles = ['tile_11','tile_22'] # 
 
 overwrite = True
 

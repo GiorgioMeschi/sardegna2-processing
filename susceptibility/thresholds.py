@@ -6,7 +6,7 @@ import numpy as np
 from geospatial_tools import FF_tools as ff
 
 from home import DATAPATH
-vs = 'v2'
+vs = 'v1'
 
 fft = ff.FireTools()
 
@@ -15,14 +15,14 @@ months = list(range(1, 13))
 allyears = [f"{year}_{month}" for year in years for month in months]
 
 settings = dict(
-    countries = ['calabria2'],
+    countries = ['sardegna2'],
     years = allyears,
     folder_before_country = '/share/drought/projects',
     folder_after_country = f'data/susceptibility/{vs}',
-    fires_paths = 'data/raw/burned_area/incendi_dpc_2007_2023_calabria_3857.shp',
-    name_susc_without_year = 'susc_calabria_',
+    fires_paths = 'data/raw/burned_area/incendi_dpc_2007_2023_sardegna_32632.shp',
+    name_susc_without_year = 'susc_',
     year_fires_colname = 'date_iso',
-    crs = 'epsg:3857',
+    crs = 'epsg:32632',
     year_in_name = True,
     allow_plot = False
 ) 
